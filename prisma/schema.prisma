@@ -1,0 +1,48 @@
+// This is your Prisma schema file for the Baasly project
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")  // Use DATABASE_URL from .env
+}
+
+// Define your data models below
+
+// 1. User Model
+model User {
+  id        Int      @id @default(autoincrement())  // Primary Key, auto-incremented
+  name      String                                  // User's name
+  email     String   @unique                        // Email, must be unique
+  password  String                                  // Hashed password
+  createdAt DateTime @default(now())                // Timestamp when user was created
+  
+  // Relations
+  projects  Project[]                               // One-to-many relation with Project
+}
+
+// 2. Project Model
+model Project {
+  id        Int      @id @default(autoincrement())  // Primary Key
+  name      String                                  // Project name
+  description String?                               // Optional project description
+  userId    Int                                     // Foreign Key to User
+  createdAt DateTime @default(now())                // Timestamp when project was created
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id])  // Each project belongs to a user
+  apiKeys   APIKey[]                                // One-to-many relation with APIKey
+}
+
+// 3. API Key Model
+model APIKey {
+  id        Int      @id @default(autoincrement())  // Primary Key
+  key       String   @unique                        // Unique API key for the project
+  projectId Int                                     // Foreign Key to Project
+  createdAt DateTime @default(now())                // Timestamp when API key was created
+
+  // Relations
+  project   Project  @relation(fields: [projectId], references: [id])  // Each API key belongs to a project
+}
